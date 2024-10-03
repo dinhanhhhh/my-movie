@@ -36,13 +36,10 @@ const TVShowPage = () => {
       <h1 className="text-3xl font-bold text-center mb-6">{title}</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {tvShows.map((show) => (
-          <div
-            key={show.slug}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
-          >
+          <div key={show.slug} className="rounded-lg shadow-lg overflow-hidden">
             <a href={`/info/${show.slug}`}>
               <img
-                className="w-full h-64 object-cover"
+                className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                 src={`https://phimimg.com/${show.poster_url}`}
                 alt={show.name || "card__film"}
               />

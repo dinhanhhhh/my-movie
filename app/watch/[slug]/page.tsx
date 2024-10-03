@@ -73,10 +73,10 @@ function Watch() {
   }, [film]);
 
   return (
-    <div className="watch bg-gray-100 min-h-screen">
+    <div className="watch">
       <div className="container mx-auto p-6">
         <div className="film__title mb-4">
-          <h1 className="film__name text-3xl font-bold text-gray-800">
+          <h1 className="film__name text-3xl font-bold">
             {`${content.name} ~ Tập ${active + 1}`}
           </h1>
         </div>
@@ -85,15 +85,15 @@ function Watch() {
             <video
               id="my-hls-video"
               controls
-              className="w-full h-80 rounded-lg shadow-lg" // Tăng chiều cao video
+              className="w-full h-96 rounded-lg shadow-lg" // Tăng chiều cao video
             />
           </div>
         </div>
         <div className="w-full mb-4">
-          <div className="list__chap bg-white shadow-md rounded p-4">
+          <div className="list__chap shadow-md rounded p-4">
             <div className="list__chap--info mb-2">
               <p className="list__chap--title font-bold text-lg">Chọn tập</p>
-              <p className="list__chap--desc text-gray-600">
+              <p className="list__chap--desc text-gray-500">
                 Tập từ 1 đến <span className="chap__desc">{chap}</span>
               </p>
             </div>
@@ -118,7 +118,7 @@ function Watch() {
             </div>
           </div>
         </div>
-        <div className="film__info mt-4 bg-white p-4 rounded shadow">
+        {/* <div className="film__info mt-4 bg-white p-4 rounded shadow">
           <div className="film__info--desc">
             <p className="info__title">
               Thời gian:{" "}
@@ -128,7 +128,7 @@ function Watch() {
               Nội dung: <span className="film__desc">{content.desc}</span>
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

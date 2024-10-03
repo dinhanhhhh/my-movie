@@ -69,13 +69,10 @@ export default function SearchPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {valueSearch && search?.data?.items && search.data.items.length > 0
           ? search.data.items.map((ds, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-md overflow-hidden"
-              >
+              <div key={index} className="rounded-lg shadow-md overflow-hidden">
                 <a href={`/info/${ds.slug}`}>
                   <img
-                    className="w-full h-64 object-cover"
+                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                     src={`https://phimimg.com/${ds.poster_url}`}
                     alt={ds.title || "card__film"}
                   />

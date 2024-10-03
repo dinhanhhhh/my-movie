@@ -28,14 +28,11 @@ function News() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {news.map((data) => (
-          <div
-            key={data.slug}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
-          >
+          <div key={data.slug} className="rounded-lg shadow-lg overflow-hidden">
             <div className="card__film">
               <a href={`/info/${data.slug}`}>
                 <img
-                  className="w-full h-64 object-cover"
+                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                   src={data.poster_url} // Sử dụng trực tiếp poster_url từ API
                   alt={data.name || "card__film"}
                 />

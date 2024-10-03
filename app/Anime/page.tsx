@@ -38,11 +38,11 @@ const AnimePage = () => {
         {animes.map((anime) => (
           <div
             key={anime.slug}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
+            className="rounded-lg shadow-lg overflow-hidden"
           >
             <a href={`/info/${anime.slug}`}>
               <img
-                className="w-full h-64 object-cover"
+                className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                 src={`https://phimimg.com/${anime.poster_url}`}
                 alt={anime.name || "card__film"}
               />

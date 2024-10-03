@@ -1,22 +1,26 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import ModeToggle from "@/app/components/mode-toggle";
 
 const Header: React.FC = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+  );
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const checkScreenSize = () => {
-    setIsMobile(window.innerWidth <= 768);
-    if (window.innerWidth > 768) {
-      setMenuOpen(false); // Đóng menu khi không phải mobile
-    }
-  };
+  const [mounted, setMounted] = useState(false); // Kiểm tra mount
 
   useEffect(() => {
+    setMounted(true); // Đánh dấu rằng component đã mount
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setMenuOpen(false); // Đóng menu khi không phải mobile
+      }
+    };
+
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
-
     return () => {
       window.removeEventListener("resize", checkScreenSize);
     };
@@ -26,21 +30,29 @@ const Header: React.FC = () => {
     setMenuOpen((prev) => !prev);
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <header className="bg-gray-800 text-white p-4">
-      <div className="flex justify-start items-center max-w-7xl mx-auto space-x-12">
-        {/* Logo PhimChill */}
+      <div className="flex justify-between items-center max-w-7xl mx-auto space-x-12">
+        {/* Logo Phim Hay */}
         <div className="header__logo">
-          <Link href="/" className="text-2xl font-bold">
-            <span className="text-gradient">Phim Hay</span>
+          <Link href="/" className="text-2xl font-bold flex items-center">
+            <img
+              src="/images/logo.png"
+              alt="Logo Phim Hay"
+              className="h-10 mr-2"
+            />
+            <span className="text-orange-400 transition-colors duration-300 hover:text-red-500 ">
+              Phim Hay
+            </span>
           </Link>
         </div>
-
         {/* Desktop Menu */}
         {!isMobile && (
           <nav className="flex space-x-12">
-            {" "}
-            {/* Sử dụng flex và space-x để căn khoảng cách */}
             <Link href="/search" className="hover:text-yellow-300">
               Tìm Kiếm
             </Link>
@@ -61,7 +73,6 @@ const Header: React.FC = () => {
             </Link>
           </nav>
         )}
-
         {/* Mobile Menu */}
         {isMobile && (
           <div className="md:hidden">
@@ -109,6 +120,8 @@ const Header: React.FC = () => {
             )}
           </div>
         )}
+        {/* Mode Toggle */}
+        <ModeToggle /> {/* Thêm nút ModeToggle vào đây */}
       </div>
     </header>
   );

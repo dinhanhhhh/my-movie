@@ -41,11 +41,11 @@ export default function MoviePage() {
           movies.map((movie) => (
             <div
               key={movie.slug}
-              className="bg-white rounded-lg shadow-lg overflow-hidden"
+              className="rounded-lg shadow-lg overflow-hidden"
             >
               <a href={`/info/${movie.slug}`}>
                 <img
-                  className="w-full h-64 object-cover"
+                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                   src={`https://phimimg.com/${movie.poster_url}`}
                   alt={movie.name || "card__film"}
                 />

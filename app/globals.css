@@ -25,3 +25,11 @@ body {
     text-wrap: balance;
   }
 }
+html {
+  @apply bg-white text-black;
+}
+
+.dark {
+  @apply bg-gray-900 text-white; /* Cập nhật màu nền và màu chữ cho chế độ tối */
+}
+

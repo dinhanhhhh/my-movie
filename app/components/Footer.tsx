@@ -1,19 +1,8 @@
-import React from "react";
-
-const Footer: React.FC = () => {
+// Footer.tsx
+export default function Footer() {
   return (
-    <footer className="bg-gray-100 py-6">
-      <div className="container mx-auto flex flex-col items-center justify-center">
-        <h2 className="text-gray-700 text-center mb-2">
-          © 2024 <span className="font-semibold">Phim Hay</span>. All rights
-          reserved.
-        </h2>
-        <p className="text-gray-500 text-sm text-center">
-          Designed with love for movie enthusiasts.
-        </p>
-      </div>
+    <footer className="bg-gray-800 text-white py-4 text-center">
+      <p>&copy; 2024 Movies. All rights reserved.</p>
     </footer>
   );
-};
-
-export default Footer;
+}
