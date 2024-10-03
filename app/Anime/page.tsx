@@ -1,6 +1,7 @@
 // app/Anime/page.tsx
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link"; // Nhập Link từ Next.js
 
 interface AnimeData {
   slug: string;
@@ -11,7 +12,9 @@ interface AnimeData {
 
 const AnimePage = () => {
   const [animes, setAnimes] = useState<AnimeData[]>([]);
-  const [title, setTitle] = useState<string>("");
+  const [title, setTitle] = useState<string>("Hoạt Hình");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAnimes() {
@@ -19,17 +22,31 @@ const AnimePage = () => {
         const res = await fetch(
           "https://phimapi.com/v1/api/danh-sach/hoat-hinh?limit=24"
         );
+        if (!res.ok) {
+          throw new Error("Network response was not ok");
+        }
         const data = await res.json();
         setAnimes(data.data.items || []);
         setTitle(data.data.titlePage || "Hoạt Hình");
-        document.title = title; // Cập nhật tiêu đề trang
+        document.title = data.data.titlePage || "Hoạt Hình"; // Cập nhật tiêu đề trang
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError("Có lỗi xảy ra khi tải dữ liệu.");
+      } finally {
+        setLoading(false); // Đặt trạng thái tải thành false
       }
     }
 
     fetchAnimes();
-  }, [title]);
+  }, []);
+
+  if (loading) {
+    return <div className="text-center">Đang tải...</div>; // Hiển thị thông báo tải
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>; // Hiển thị thông báo lỗi
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -40,20 +57,20 @@ const AnimePage = () => {
             key={anime.slug}
             className="rounded-lg shadow-lg overflow-hidden"
           >
-            <a href={`/info/${anime.slug}`}>
+            <Link href={`/info/${anime.slug}`}>
               <img
                 className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                 src={`https://phimimg.com/${anime.poster_url}`}
                 alt={anime.name || "card__film"}
               />
-            </a>
+            </Link>
             <div className="p-4">
-              <a
+              <Link
                 className="text-lg font-semibold block mb-1"
                 href={`/info/${anime.slug}`}
               >
                 {anime.name}
-              </a>
+              </Link>
               <p className="text-gray-600">{anime.origin_name}</p>
             </div>
           </div>

@@ -1,7 +1,7 @@
-// app/TV/[tvId]/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image"; // Thêm import Image từ next/image
 
 interface TVShowData {
   slug: string;
@@ -13,49 +13,72 @@ interface TVShowData {
 const TVShowPage = () => {
   const { tvId } = useParams();
   const [tvShows, setTVShows] = useState<TVShowData[]>([]);
-  const [title, setTitle] = useState<string>("");
+  const [title, setTitle] = useState<string>("Phim Bộ");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchTVShows() {
+      setLoading(true); // Bắt đầu tải dữ liệu
+      setError(null); // Đặt lại lỗi
+
       try {
-        const res = await fetch(`https://phimapi.com/v1/api/danh-sach/phim-bo?limit=24`);
+        const res = await fetch(
+          `https://phimapi.com/v1/api/danh-sach/phim-bo?limit=24`
+        );
+        if (!res.ok) throw new Error("Failed to fetch data");
         const data = await res.json();
         setTVShows(data.data.items || []);
         setTitle(data.data.titlePage || "Phim Bộ");
-        document.title = title;
       } catch (error) {
-        console.error("Error fetching data:", error);
+        setError(
+          error instanceof Error ? error.message : "Error fetching data"
+        );
+      } finally {
+        setLoading(false); // Kết thúc tải dữ liệu
       }
     }
 
     fetchTVShows();
-  }, [tvId, title]);
+  }, [tvId]);
 
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold text-center mb-6">{title}</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {tvShows.map((show) => (
-          <div key={show.slug} className="rounded-lg shadow-lg overflow-hidden">
-            <a href={`/info/${show.slug}`}>
-              <img
-                className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                src={`https://phimimg.com/${show.poster_url}`}
-                alt={show.name || "card__film"}
-              />
-            </a>
-            <div className="p-4">
-              <a
-                className="text-lg font-semibold block mb-1"
-                href={`/info/${show.slug}`}
-              >
-                {show.name}
+
+      {loading ? (
+        <p className="text-center">Đang tải...</p> // Trạng thái loading
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p> // Hiển thị lỗi nếu có
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {tvShows.map((show) => (
+            <div
+              key={show.slug}
+              className="rounded-lg shadow-lg overflow-hidden"
+            >
+              <a href={`/info/${show.slug}`}>
+                <Image
+                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
+                  src={`https://phimimg.com/${show.poster_url}`} // Sử dụng Image từ Next.js
+                  alt={show.name || "card__film"}
+                  width={300} // Chiều rộng tối ưu
+                  height={450} // Chiều cao tối ưu
+                />
               </a>
-              <p className="text-gray-600">{show.origin_name}</p>
+              <div className="p-4">
+                <a
+                  className="text-lg font-semibold block mb-1"
+                  href={`/info/${show.slug}`}
+                >
+                  {show.name}
+                </a>
+                <p className="text-gray-600">{show.origin_name}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

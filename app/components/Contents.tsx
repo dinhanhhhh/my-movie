@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link"; // Nhập Link từ Next.js
 
 // Định nghĩa kiểu dữ liệu cho phim
 type Film = {
@@ -24,7 +25,7 @@ const Content: React.FC = () => {
     phimbo: [],
     tvshows: [],
   });
-  const [loading, setLoading] = useState<boolean>(true); // Thêm trạng thái loading
+  const [loading, setLoading] = useState<boolean>(true); // Trạng thái loading
   const [error, setError] = useState<string | null>(null); // Trạng thái lỗi
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const Content: React.FC = () => {
           !phimboRes.ok ||
           !tvshowRes.ok
         ) {
-          throw new Error("Failed to fetch data.");
+          throw new Error("Không thể tải dữ liệu từ máy chủ.");
         }
 
         const hoatHinhData = await hoatHinhRes.json();
@@ -62,10 +63,10 @@ const Content: React.FC = () => {
         document.title =
           "Phim Chill chất lượng cao miễn phí. Xem phim hd VietSub. Phim thuyết minh chất lượng HD.";
       } catch (error) {
-        setError("Không thể tải dữ liệu, vui lòng thử lại sau.");
+        setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false); // Kết thúc trạng thái loading sau khi dữ liệu đã được tải
+        setLoading(false); // Kết thúc trạng thái loading
       }
     };
 
@@ -77,29 +78,34 @@ const Content: React.FC = () => {
       <span className="title text-xl font-bold">{title}</span>
       <hr className="my-2 border border-gray-600" />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {filmData.map((data, index) => (
-          <div key={index} className="film rounded-lg shadow-md">
+        {filmData.map((data) => (
+          <div key={data.slug} className="film rounded-lg shadow-md">
             <div className="card__film">
-              <a href={`/info/${data.slug}`}>
+              <Link href={`/info/${data.slug}`}>
                 <img
                   className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
                   src={`https://phimimg.com/${data.poster_url}`}
                   alt={data.name || "card__film"}
                 />
-              </a>
+              </Link>
             </div>
             <div className="card__info p-2">
-              <a
+              <Link
                 className="film__name text-md font-medium"
                 href={`/info/${data.slug}`}
               >
                 {data.name}
-              </a>
+              </Link>
               <p className="text-sm text-gray-600">{data.origin_name}</p>
             </div>
           </div>
         ))}
       </div>
+      {filmData.length === 0 && (
+        <p className="text-center text-gray-500">
+          Không có dữ liệu nào để hiển thị.
+        </p>
+      )}
     </div>
   );
 

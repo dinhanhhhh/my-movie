@@ -34,17 +34,21 @@ function Watch() {
     const fetchFilmData = async () => {
       try {
         const res = await fetch(`https://phimapi.com/phim/${slug}`);
+        if (!res.ok) throw new Error("Failed to fetch data");
+
         const watch: FilmData = await res.json();
 
-        setContent({
-          name: watch.movie.name,
-          time: watch.movie.time,
-          desc: watch.movie.content,
-        });
-        setChap(watch.episodes[0].server_data.length);
-        setFilm(watch.episodes[0].server_data[0].link_m3u8);
-        setActiveFilm(watch.episodes[0].server_data);
-        document.title = watch.movie.name;
+        if (watch && watch.movie && watch.episodes.length > 0) {
+          setContent({
+            name: watch.movie.name,
+            time: watch.movie.time,
+            desc: watch.movie.content,
+          });
+          setChap(watch.episodes[0].server_data.length);
+          setFilm(watch.episodes[0].server_data[0]?.link_m3u8);
+          setActiveFilm(watch.episodes[0].server_data);
+          document.title = watch.movie.name;
+        }
       } catch (error) {
         console.error("Error fetching film data:", error);
       }
@@ -60,9 +64,15 @@ function Watch() {
       const hls = new Hls();
       hls.loadSource(film);
       hls.attachMedia(video);
+
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play();
       });
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("HLS error:", data);
+      });
+
       return () => {
         hls.destroy();
       };
@@ -85,7 +95,8 @@ function Watch() {
             <video
               id="my-hls-video"
               controls
-              className="w-full h-96 rounded-lg shadow-lg" // Tăng chiều cao video
+              className="w-full h-96 rounded-lg shadow-lg"
+              style={{ objectFit: "cover" }} // Đảm bảo video không bị méo
             />
           </div>
         </div>
@@ -98,7 +109,6 @@ function Watch() {
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
-              {/* Căn giữa */}
               {Array.from({ length: chap }).map((_, i) => (
                 <div
                   key={i}
@@ -118,17 +128,6 @@ function Watch() {
             </div>
           </div>
         </div>
-        {/* <div className="film__info mt-4 bg-white p-4 rounded shadow">
-          <div className="film__info--desc">
-            <p className="info__title">
-              Thời gian:{" "}
-              <span className="film__time font-semibold">{content.time}</span>
-            </p>
-            <p className="info__title">
-              Nội dung: <span className="film__desc">{content.desc}</span>
-            </p>
-          </div>
-        </div> */}
       </div>
     </div>
   );

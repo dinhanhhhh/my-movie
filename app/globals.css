@@ -25,6 +25,7 @@ body {
     text-wrap: balance;
   }
 }
+
 html {
   @apply bg-white text-black;
 }
@@ -33,3 +34,7 @@ html {
   @apply bg-gray-900 text-white; /* Cập nhật màu nền và màu chữ cho chế độ tối */
 }
 
+/* Tối ưu hóa màu nền cho chế độ tối */
+body.dark {
+  @apply bg-gray-900 text-white; /* Cập nhật màu nền và màu chữ cho chế độ tối */
+}

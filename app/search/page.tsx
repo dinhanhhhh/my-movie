@@ -1,7 +1,7 @@
-// app/Search/page.tsx
 "use client"; // Báo hiệu đây là Client Component
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image"; // Thêm import Image từ next/image
 
 // Định nghĩa kiểu dữ liệu cho kết quả tìm kiếm
 interface SearchResultItem {
@@ -20,20 +20,37 @@ interface SearchResult {
 export default function SearchPage() {
   const [valueSearch, setValueSearch] = useState<string>(""); // State tìm kiếm là một chuỗi
   const [search, setSearch] = useState<SearchResult | null>(null); // State cho kết quả tìm kiếm
+  const [loading, setLoading] = useState<boolean>(false); // Trạng thái loading
+  const [error, setError] = useState<string | null>(null); // Trạng thái lỗi
 
   useEffect(() => {
-    if (valueSearch.trim() !== "") {
-      fetch(
-        `https://phimapi.com/v1/api/tim-kiem?keyword=${valueSearch}&limit=24`
-      )
-        .then((res) => res.json())
-        .then((dataSearch: SearchResult) => {
-          setSearch(dataSearch);
-        })
-        .catch((error) => console.error("Error fetching data:", error));
-    } else {
-      setSearch(null); // Nếu không có giá trị tìm kiếm thì reset kết quả
-    }
+    const fetchSearchResults = async () => {
+      if (valueSearch.trim() === "") {
+        setSearch(null); // Nếu không có giá trị tìm kiếm thì reset kết quả
+        return;
+      }
+
+      setLoading(true); // Bắt đầu tải dữ liệu
+      setError(null); // Reset lỗi
+
+      try {
+        const res = await fetch(
+          `https://phimapi.com/v1/api/tim-kiem?keyword=${valueSearch}&limit=24`
+        );
+        if (!res.ok) throw new Error("Lỗi khi gọi API");
+        const dataSearch: SearchResult = await res.json();
+        setSearch(dataSearch);
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "Lỗi khi lấy dữ liệu"
+        );
+      } finally {
+        setLoading(false); // Kết thúc tải dữ liệu
+      }
+    };
+
+    // Gọi hàm tìm kiếm
+    fetchSearchResults();
   }, [valueSearch]);
 
   return (
@@ -50,15 +67,8 @@ export default function SearchPage() {
         <button
           onClick={() => {
             if (valueSearch.trim() !== "") {
-              // Thực hiện tìm kiếm khi nhấn nút
-              fetch(
-                `https://phimapi.com/v1/api/tim-kiem?keyword=${valueSearch}&limit=24`
-              )
-                .then((res) => res.json())
-                .then((dataSearch: SearchResult) => {
-                  setSearch(dataSearch);
-                })
-                .catch((error) => console.error("Error fetching data:", error));
+              // Chỉ cần gán lại giá trị để gọi useEffect
+              setValueSearch(valueSearch);
             }
           }}
           className="bg-blue-500 text-white rounded-r-md p-2 px-4 hover:bg-blue-600 transition duration-200"
@@ -66,31 +76,43 @@ export default function SearchPage() {
           Tìm kiếm
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {valueSearch && search?.data?.items && search.data.items.length > 0
-          ? search.data.items.map((ds, index) => (
-              <div key={index} className="rounded-lg shadow-md overflow-hidden">
-                <a href={`/info/${ds.slug}`}>
-                  <img
-                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                    src={`https://phimimg.com/${ds.poster_url}`}
-                    alt={ds.title || "card__film"}
-                  />
-                </a>
-                <div className="p-4">
-                  <a
-                    className="text-lg font-semibold block mb-1"
-                    href={`/info/${ds.slug}`}
-                  >
-                    {ds.name || "Tên phim"}
+
+      {loading ? (
+        <p className="text-center">Đang tải...</p> // Trạng thái loading
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p> // Hiển thị lỗi nếu có
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {search?.data?.items && search.data.items.length > 0
+            ? search.data.items.map((ds) => (
+                <div
+                  key={ds.slug}
+                  className="rounded-lg shadow-md overflow-hidden"
+                >
+                  <a href={`/info/${ds.slug}`}>
+                    <Image
+                      className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
+                      src={`https://phimimg.com/${ds.poster_url}`} // Sử dụng Image từ Next.js
+                      alt={ds.title || "card__film"}
+                      width={300} // Chiều rộng tối ưu
+                      height={450} // Chiều cao tối ưu
+                    />
                   </a>
+                  <div className="p-4">
+                    <a
+                      className="text-lg font-semibold block mb-1"
+                      href={`/info/${ds.slug}`}
+                    >
+                      {ds.name || "Tên phim"}
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))
-          : valueSearch && (
-              <p className="text-center">Không tìm thấy phim nào.</p>
-            )}
-      </div>
+              ))
+            : valueSearch && (
+                <p className="text-center">Không tìm thấy phim nào.</p>
+              )}
+        </div>
+      )}
     </div>
   );
 }

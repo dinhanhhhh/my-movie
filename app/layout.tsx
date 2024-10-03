@@ -1,20 +1,8 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer"; // Import Footer
 import { ThemeProvider } from "@/app/components/theme-provider";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
 
 export const metadata: Metadata = {
   title: "Movies",
@@ -28,14 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased bg-white text-black dark:bg-gray-900 dark:text-yellow-300">
         <ThemeProvider attribute="class" defaultTheme="system">
           <Header />
-          <main className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-yellow-300">
-            {children}
-          </main>
+          <main className="min-h-screen">{children}</main>
           <Footer />
         </ThemeProvider>
       </body>
