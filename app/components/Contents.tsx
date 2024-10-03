@@ -75,6 +75,7 @@ const Content: React.FC = () => {
   const renderFilmList = (title: string, filmData: Film[]) => (
     <div className="form_card mb-8">
       <span className="title text-xl font-bold">{title}</span>
+      <hr className="my-2 border border-gray-600" />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {filmData.map((data, index) => (
           <div key={index} className="film rounded-lg shadow-md">
