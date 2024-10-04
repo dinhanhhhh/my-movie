@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image"; // Thêm import Image từ next/image
+import Link from "next/link"; // Thêm import Link từ next/link
 
 // Định nghĩa kiểu dữ liệu cho kết quả tìm kiếm
 interface SearchResultItem {
@@ -9,6 +10,7 @@ interface SearchResultItem {
   poster_url: string;
   title?: string;
   name?: string;
+  origin_name?: string; // Thêm thuộc tính origin_name
 }
 
 interface SearchResult {
@@ -16,6 +18,31 @@ interface SearchResult {
     items: SearchResultItem[];
   };
 }
+
+// Component cho từng card phim
+const FilmCard: React.FC<{ film: SearchResultItem }> = ({ film }) => (
+  <div className="rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 duration-300">
+    <Link href={`/info/${film.slug}`}>
+      <Image
+        className="w-full h-auto aspect-[2/3] object-cover"
+        src={`https://phimimg.com/${film.poster_url}`} // Sử dụng Image từ Next.js
+        alt={film.name || "Phim không tên"} // Alt text tối ưu
+        width={300} // Chiều rộng tối ưu
+        height={450} // Chiều cao tối ưu
+      />
+    </Link>
+    <div className="p-4 bg-gray-50 dark:bg-gray-900">
+      <Link
+        className="text-lg font-semibold block mb-1"
+        href={`/info/${film.slug}`}
+      >
+        {film.name || "Tên phim"}
+      </Link>
+      {film.origin_name && <p className="text-sm">{film.origin_name}</p>}{" "}
+      {/* Hiển thị origin_name nếu có */}
+    </div>
+  </div>
+);
 
 export default function SearchPage() {
   const [valueSearch, setValueSearch] = useState<string>(""); // State tìm kiếm là một chuỗi
@@ -82,31 +109,10 @@ export default function SearchPage() {
       ) : error ? (
         <p className="text-center text-red-500">{error}</p> // Hiển thị lỗi nếu có
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {search?.data?.items && search.data.items.length > 0
-            ? search.data.items.map((ds) => (
-                <div
-                  key={ds.slug}
-                  className="rounded-lg shadow-md overflow-hidden"
-                >
-                  <a href={`/info/${ds.slug}`}>
-                    <Image
-                      className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                      src={`https://phimimg.com/${ds.poster_url}`} // Sử dụng Image từ Next.js
-                      alt={ds.title || "card__film"}
-                      width={300} // Chiều rộng tối ưu
-                      height={450} // Chiều cao tối ưu
-                    />
-                  </a>
-                  <div className="p-4">
-                    <a
-                      className="text-lg font-semibold block mb-1"
-                      href={`/info/${ds.slug}`}
-                    >
-                      {ds.name || "Tên phim"}
-                    </a>
-                  </div>
-                </div>
+            ? search.data.items.map((film) => (
+                <FilmCard key={film.slug} film={film} /> // Sử dụng FilmCard
               ))
             : valueSearch && (
                 <p className="text-center">Không tìm thấy phim nào.</p>

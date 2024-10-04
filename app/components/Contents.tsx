@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link"; // Nhập Link từ Next.js
+import RenderCard from "../components/RenderCard"; // Import RenderCard
 
 // Định nghĩa kiểu dữ liệu cho phim
 type Film = {
@@ -74,31 +74,12 @@ const Content: React.FC = () => {
   }, []);
 
   const renderFilmList = (title: string, filmData: Film[]) => (
-    <div className="form_card mb-8">
-      <span className="title text-xl font-bold">{title}</span>
+    <div className="form_card mb-8 p-4">
+      <span className="title text-2xl font-bold">{title}</span>
       <hr className="my-2 border border-gray-600" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {filmData.map((data) => (
-          <div key={data.slug} className="film rounded-lg shadow-md">
-            <div className="card__film">
-              <Link href={`/info/${data.slug}`}>
-                <img
-                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                  src={`https://phimimg.com/${data.poster_url}`}
-                  alt={data.name || "card__film"}
-                />
-              </Link>
-            </div>
-            <div className="card__info p-2">
-              <Link
-                className="film__name text-md font-medium"
-                href={`/info/${data.slug}`}
-              >
-                {data.name}
-              </Link>
-              <p className="text-sm text-gray-600">{data.origin_name}</p>
-            </div>
-          </div>
+          <RenderCard key={data.slug} film={data} />
         ))}
       </div>
       {filmData.length === 0 && (

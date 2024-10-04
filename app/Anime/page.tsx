@@ -1,7 +1,7 @@
 // app/Anime/page.tsx
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link"; // Nhập Link từ Next.js
+import RenderCard from "@/app/components/RenderCard";
 
 interface AnimeData {
   slug: string;
@@ -53,27 +53,7 @@ const AnimePage = () => {
       <h1 className="text-3xl font-bold text-center mb-6">{title}</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {animes.map((anime) => (
-          <div
-            key={anime.slug}
-            className="rounded-lg shadow-lg overflow-hidden"
-          >
-            <Link href={`/info/${anime.slug}`}>
-              <img
-                className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                src={`https://phimimg.com/${anime.poster_url}`}
-                alt={anime.name || "card__film"}
-              />
-            </Link>
-            <div className="p-4">
-              <Link
-                className="text-lg font-semibold block mb-1"
-                href={`/info/${anime.slug}`}
-              >
-                {anime.name}
-              </Link>
-              <p className="text-gray-600">{anime.origin_name}</p>
-            </div>
-          </div>
+          <RenderCard key={anime.slug} film={anime} /> 
         ))}
       </div>
     </div>

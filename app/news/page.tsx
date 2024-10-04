@@ -1,8 +1,9 @@
-// app/News/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 
+// Định nghĩa kiểu dữ liệu cho phim
 interface NewsData {
   slug: string;
   name: string;
@@ -10,10 +11,37 @@ interface NewsData {
   poster_url: string;
 }
 
-function News() {
-  const [news, setNews] = useState<NewsData[]>([]); // Định nghĩa kiểu dữ liệu cho news
-  const [loading, setLoading] = useState<boolean>(true); // Trạng thái loading
-  const [error, setError] = useState<string | null>(null); // Trạng thái lỗi
+// Component hiển thị thông tin từng phim
+const FilmCard: React.FC<NewsData> = ({
+  slug,
+  name,
+  origin_name,
+  poster_url,
+}) => (
+  <div className="rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 duration-300">
+    <Link href={`/info/${slug}`}>
+      <Image
+        className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
+        src={poster_url}
+        alt={name || "card__film"}
+        width={300}
+        height={450}
+        loading="lazy"
+      />
+    </Link>
+    <div className="p-4 bg-gray-50 dark:bg-gray-900">
+      <Link className="text-lg font-semibold block mb-1" href={`/info/${slug}`}>
+        {name}
+      </Link>
+      <p className="text-sm">{origin_name}</p>
+    </div>
+  </div>
+);
+
+const News: React.FC = () => {
+  const [news, setNews] = useState<NewsData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchNews() {
@@ -25,13 +53,13 @@ function News() {
           throw new Error("Failed to fetch news");
         }
         const data = await response.json();
-        setNews(data.items);
+        setNews(data.items || []);
         document.title = "Phim mới cập nhật !!";
       } catch (error) {
         setError("Không thể tải dữ liệu phim mới. Vui lòng thử lại sau.");
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false); // Kết thúc trạng thái loading
+        setLoading(false);
       }
     }
 
@@ -43,43 +71,25 @@ function News() {
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">PHIM MỚI CẬP NHẬT</h1>
       </div>
+
+      {/* Kiểm tra trạng thái */}
       {loading ? (
         <p className="text-center">Đang tải dữ liệu...</p>
       ) : error ? (
         <p className="text-center text-red-600">{error}</p>
-      ) : (
+      ) : news.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {news.map((data) => (
-            <div
-              key={data.slug}
-              className="rounded-lg shadow-lg overflow-hidden"
-            >
-              <a href={`/info/${data.slug}`}>
-                <Image
-                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                  src={data.poster_url} // Sử dụng trực tiếp poster_url từ API
-                  alt={data.name || "card__film"}
-                  width={300} // Đặt chiều rộng tùy ý
-                  height={450} // Đặt chiều cao tùy ý
-                  loading="lazy" // Tải hình ảnh lười
-                />
-              </a>
-              <div className="p-4">
-                <a
-                  className="text-lg font-semibold block mb-1"
-                  href={`/info/${data.slug}`}
-                >
-                  {data.name}
-                </a>
-                <p className="text-gray-600">{data.origin_name}</p>
-              </div>
-            </div>
+            <FilmCard key={data.slug} {...data} />
           ))}
         </div>
+      ) : (
+        <p className="text-center text-gray-500">
+          Không có phim mới để hiển thị.
+        </p>
       )}
-      <div className="movie__page"></div>
     </div>
   );
-}
+};
 
 export default News;

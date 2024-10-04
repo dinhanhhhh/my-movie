@@ -51,32 +51,36 @@ const TVShowPage = () => {
       ) : error ? (
         <p className="text-center text-red-500">{error}</p> // Hiển thị lỗi nếu có
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {tvShows.map((show) => (
-            <div
-              key={show.slug}
-              className="rounded-lg shadow-lg overflow-hidden"
-            >
-              <a href={`/info/${show.slug}`}>
-                <Image
-                  className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                  src={`https://phimimg.com/${show.poster_url}`} // Sử dụng Image từ Next.js
-                  alt={show.name || "card__film"}
-                  width={300} // Chiều rộng tối ưu
-                  height={450} // Chiều cao tối ưu
-                />
-              </a>
-              <div className="p-4">
-                <a
-                  className="text-lg font-semibold block mb-1"
-                  href={`/info/${show.slug}`}
-                >
-                  {show.name}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          {tvShows.length > 0 ? (
+            tvShows.map((show) => (
+              <div
+                key={show.slug}
+                className="rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 duration-300"
+              >
+                <a href={`/info/${show.slug}`}>
+                  <Image
+                    className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
+                    src={`https://phimimg.com/${show.poster_url}`} 
+                    alt={show.name || "card__film"}
+                    width={300} 
+                    height={450} 
+                  />
                 </a>
-                <p className="text-gray-600">{show.origin_name}</p>
+                <div className="p-4 bg-gray-50 dark:bg-gray-900">
+                  <a
+                    className="text-lg font-semibold block mb-1"
+                    href={`/info/${show.slug}`}
+                  >
+                    {show.name}
+                  </a>
+                  <p className="text-sm">{show.origin_name}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-center">Không tìm thấy phim nào.</p>
+          )}
         </div>
       )}
     </div>
