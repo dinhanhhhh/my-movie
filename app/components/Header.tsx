@@ -4,18 +4,17 @@ import Link from "next/link";
 import ModeToggle from "@/app/components/mode-toggle";
 
 const Header: React.FC = () => {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" ? window.innerWidth <= 768 : false
-  );
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false); // Kiểm tra mount
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [valueSearch, setValueSearch] = useState<string>("");
 
   useEffect(() => {
-    setMounted(true); // Đánh dấu rằng component đã mount
+    setMounted(true);
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth <= 768);
       if (window.innerWidth > 768) {
-        setMenuOpen(false); // Đóng menu khi không phải mobile
+        setMenuOpen(false);
       }
     };
 
@@ -34,10 +33,20 @@ const Header: React.FC = () => {
     return null;
   }
 
+  const handleSearch = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    // Kiểm tra xem có từ khóa hay không trước khi điều hướng
+    if (valueSearch.trim()) {
+      // Điều hướng đến trang tìm kiếm với từ khóa
+      window.location.href = `/search?keyword=${encodeURIComponent(
+        valueSearch
+      )}`;
+    }
+  };
+
   return (
     <header className="bg-gray-800 text-white p-4">
       <div className="flex justify-between items-center max-w-7xl mx-auto space-x-12">
-        {/* Logo Phim Hay */}
         <div className="header__logo">
           <Link href="/" className="text-2xl font-bold flex items-center">
             <img
@@ -45,35 +54,44 @@ const Header: React.FC = () => {
               alt="Logo Phim Hay"
               className="h-10 mr-2"
             />
-            <span className="text-orange-400 transition-colors duration-300 hover:text-red-500 ">
+            <span className="text-orange-400 transition-colors duration-300 hover:text-red-500">
               Phim Hay
             </span>
           </Link>
         </div>
-        {/* Desktop Menu */}
+
+        <div className="flex items-center">
+          <input
+            onChange={(e) => setValueSearch(e.target.value)}
+            value={valueSearch}
+            type="text"
+            placeholder="Tìm kiếm phim..."
+            className="border border-gray-300 rounded-l-md p-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 text-white rounded-r-md p-2 px-4 hover:bg-blue-600 transition duration-200"
+          >
+            Tìm kiếm
+          </button>
+        </div>
+
         {!isMobile && (
           <nav className="flex space-x-12">
-            <Link href="/search" className="hover:text-yellow-300">
-              Tìm Kiếm
-            </Link>
-            <Link href="/Anime" className="hover:text-yellow-300">
-              Phim Hoạt Hình
-            </Link>
-            <Link href="/movie/phim-le" className="hover:text-yellow-300">
-              Phim Lẻ
-            </Link>
-            <Link href="/TV/phim-bo" className="hover:text-yellow-300">
-              Phim Bộ
-            </Link>
-            <Link href="/news" className="hover:text-yellow-300">
-              Phim Mới
-            </Link>
-            <Link href="/api" className="hover:text-yellow-300">
-              API
-            </Link>
+            {[
+              { path: "/Anime", name: "Anime" },
+              { path: "/movie/phim-le", name: "Phim Lẻ" },
+              { path: "/TV/phim-bo", name: "Phim Bộ" },
+              { path: "/news", name: "Phim Mới" },
+              { path: "/api", name: "API" },
+            ].map(({ path, name }) => (
+              <Link key={path} href={path} className="hover:text-yellow-300">
+                {name}
+              </Link>
+            ))}
           </nav>
         )}
-        {/* Mobile Menu */}
+
         {isMobile && (
           <div className="md:hidden">
             <button className="mobile-menu__toggle" onClick={toggleMenu}>
@@ -82,46 +100,26 @@ const Header: React.FC = () => {
             {menuOpen && (
               <nav className="absolute right-0 mt-2 w-full bg-gray-800 text-white p-4">
                 <ul className="space-y-4">
-                  <li>
-                    <Link href="/search" className="hover:text-yellow-300">
-                      Tìm Kiếm
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/Anime" className="hover:text-yellow-300">
-                      Phim Hoạt Hình
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/movie/phim-le"
-                      className="hover:text-yellow-300"
-                    >
-                      Phim Lẻ
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/tv/phim-bo" className="hover:text-yellow-300">
-                      Phim Bộ
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/news" className="hover:text-yellow-300">
-                      Phim Mới
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/api" className="hover:text-yellow-300">
-                      API
-                    </Link>
-                  </li>
+                  {[
+                    { path: "/Anime", name: "Anime" },
+                    { path: "/movie/phim-le", name: "Phim Lẻ" },
+                    { path: "/TV/phim-bo", name: "Phim Bộ" },
+                    { path: "/news", name: "Phim Mới" },
+                    { path: "/api", name: "API" },
+                  ].map(({ path, name }) => (
+                    <li key={path}>
+                      <Link href={path} className="hover:text-yellow-300">
+                        {name}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </nav>
             )}
           </div>
         )}
-        {/* Mode Toggle */}
-        <ModeToggle /> {/* Thêm nút ModeToggle vào đây */}
+
+        <ModeToggle />
       </div>
     </header>
   );

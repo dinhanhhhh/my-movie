@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Hls from "hls.js";
 import { useParams } from "next/navigation";
 
-// Định nghĩa kiểu dữ liệu cho phim và các tập phim
 interface Episode {
   link_m3u8: string;
 }
@@ -23,13 +22,16 @@ interface FilmData {
 }
 
 function Watch() {
-  const [chap, setChap] = useState(0); // Số lượng tập phim
-  const [active, setActive] = useState(0); // Tập phim hiện tại
-  const [film, setFilm] = useState<string>(""); // Đường dẫn tập phim hiện tại
-  const [activeFilm, setActiveFilm] = useState<Episode[]>([]); // Danh sách các tập phim
-  const [content, setContent] = useState({ name: "", time: "", desc: "" }); // Nội dung phim
-  const [loading, setLoading] = useState(false); // Trạng thái tải video mới
-  const { slug } = useParams(); // Lấy slug từ URL
+  const [chap, setChap] = useState(0);
+  const [active, setActive] = useState(0);
+  const [film, setFilm] = useState<string>("");
+  const [activeFilm, setActiveFilm] = useState<Episode[]>([]);
+  const [content, setContent] = useState({ name: "", time: "", desc: "" });
+  const [loading, setLoading] = useState(false);
+  const { slug } = useParams();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null); // Sử dụng useRef
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false); // Thêm biến trạng thái
 
   useEffect(() => {
     const fetchFilmData = async () => {
@@ -63,16 +65,10 @@ function Watch() {
   }, [slug]);
 
   useEffect(() => {
-    const video = document.getElementById("my-hls-video") as HTMLVideoElement;
-
-    if (Hls.isSupported()) {
+    if (videoRef.current && Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(film);
-      hls.attachMedia(video);
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play();
-      });
+      hls.attachMedia(videoRef.current); // Sử dụng videoRef.current
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         console.error("HLS error:", data);
@@ -81,11 +77,60 @@ function Watch() {
       return () => {
         hls.destroy();
       };
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = film;
-      video.play();
+    } else if (
+      videoRef.current &&
+      videoRef.current.canPlayType("application/vnd.apple.mpegurl")
+    ) {
+      videoRef.current.src = film; // Sử dụng videoRef.current
     }
   }, [film]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "f" || e.key === "F") {
+        const videoElement = videoRef.current; // Sử dụng videoRef.current
+        if (videoElement) {
+          if (!isFullscreen) {
+            if (videoElement.requestFullscreen) {
+              videoElement.requestFullscreen();
+            }
+            setIsFullscreen(true);
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            }
+            setIsFullscreen(false);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
+
+  const handleSelectEpisode = (index: number) => {
+    setLoading(true);
+    setActive(index);
+    setFilm(activeFilm[index].link_m3u8);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  };
+
+  const handleVideoClick = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsVideoPlaying(!isVideoPlaying); // Cập nhật trạng thái
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 watch">
@@ -104,6 +149,8 @@ function Watch() {
             controls
             className="w-full h-96 rounded-lg shadow-lg"
             style={{ objectFit: "cover" }}
+            ref={videoRef} // Gán ref cho video
+            onClick={handleVideoClick} // Sự kiện click vào video
           />
         </div>
       </div>
@@ -125,12 +172,7 @@ function Watch() {
                     ? "bg-green-500 text-white"
                     : "bg-gray-800 text-white hover:bg-green-600"
                 }`}
-                onClick={() => {
-                  setLoading(true); // Hiển thị trạng thái loading khi chọn tập
-                  setActive(i);
-                  setFilm(activeFilm[i].link_m3u8);
-                  setTimeout(() => setLoading(false), 1000); // Tắt trạng thái loading sau khi chuyển tập
-                }}
+                onClick={() => handleSelectEpisode(i)}
               >
                 {i + 1}
               </div>
