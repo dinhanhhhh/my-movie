@@ -1,8 +1,6 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import RenderCard from "@/app/components/RenderCard";
 
 interface SearchResultItem {
   slug: string;
@@ -17,29 +15,6 @@ interface SearchResult {
     items: SearchResultItem[];
   };
 }
-
-const FilmCard: React.FC<{ film: SearchResultItem }> = ({ film }) => (
-  <div className="rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 duration-300">
-    <Link href={`/info/${film.slug}`}>
-      <Image
-        className="w-full h-auto aspect-[2/3] object-cover"
-        src={`https://phimimg.com/${film.poster_url}`}
-        alt={film.name || "Phim không tên"}
-        width={300}
-        height={450}
-      />
-    </Link>
-    <div className="p-4 bg-gray-50 dark:bg-gray-900">
-      <Link
-        className="text-lg font-semibold block mb-1"
-        href={`/info/${film.slug}`}
-      >
-        {film.name || "Tên phim"}
-      </Link>
-      {film.origin_name && <p className="text-sm">{film.origin_name}</p>}
-    </div>
-  </div>
-);
 
 interface SearchProps {
   keyword: string; // Nhận từ khóa từ props
@@ -90,7 +65,7 @@ const Search: React.FC<SearchProps> = ({ keyword }) => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {search?.data?.items && search.data.items.length > 0 ? (
             search.data.items.map((film) => (
-              <FilmCard key={film.slug} film={film} />
+              <RenderCard key={film.slug} film={film} /> // Sử dụng RenderCard
             ))
           ) : (
             <p className="col-span-full text-center">
