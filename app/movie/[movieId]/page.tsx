@@ -2,7 +2,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import RenderCard from "../../components/RenderCard"; // Import RenderCard
+import RenderCard from "@/app/components/RenderCard";
 
 interface MovieData {
   slug: string;
@@ -36,14 +36,19 @@ export default function MoviePage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold text-center mb-6">{title}</h1>
+      <h1 className="text-3xl font-bold text-center mb-6 uppercase">{title}</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {movies.length > 0 ? (
           movies.map((movie) => (
-            <RenderCard key={movie.slug} film={movie} /> /* Sử dụng RenderCard */
+            <RenderCard
+              key={movie.slug}
+              film={movie}
+            /> /* Sử dụng RenderCard */
           ))
         ) : (
-          <p className="text-center text-gray-500">Không có dữ liệu nào để hiển thị.</p>
+          <p className="text-center text-gray-500">
+            Không có dữ liệu nào để hiển thị.
+          </p>
         )}
       </div>
     </div>

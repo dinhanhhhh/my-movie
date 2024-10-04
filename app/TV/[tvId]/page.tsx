@@ -44,7 +44,7 @@ const TVShowPage = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold text-center mb-6">{title}</h1>
+      <h1 className="text-3xl font-bold text-center mb-6 uppercase">{title}</h1>
 
       {loading ? (
         <p className="text-center">Đang tải...</p> // Trạng thái loading
@@ -61,10 +61,10 @@ const TVShowPage = () => {
                 <a href={`/info/${show.slug}`}>
                   <Image
                     className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
-                    src={`https://phimimg.com/${show.poster_url}`} 
+                    src={`https://phimimg.com/${show.poster_url}`}
                     alt={show.name || "card__film"}
-                    width={300} 
-                    height={450} 
+                    width={300}
+                    height={450}
                   />
                 </a>
                 <div className="p-4 bg-gray-50 dark:bg-gray-900">

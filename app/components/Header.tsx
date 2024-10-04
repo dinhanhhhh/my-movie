@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ModeToggle from "@/app/components/mode-toggle";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"; // Thêm biểu tượng từ Heroicons
 
 const Header: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -33,14 +34,21 @@ const Header: React.FC = () => {
     return null;
   }
 
-  const handleSearch = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    // Kiểm tra xem có từ khóa hay không trước khi điều hướng
-    if (valueSearch.trim()) {
-      // Điều hướng đến trang tìm kiếm với từ khóa
-      window.location.href = `/search?keyword=${encodeURIComponent(
-        valueSearch
-      )}`;
+  const handleSearch = (
+    e:
+      | React.MouseEvent<HTMLButtonElement>
+      | React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (
+      e.type === "click" ||
+      (e.type === "keydown" && (e as React.KeyboardEvent).key === "Enter")
+    ) {
+      e.preventDefault();
+      if (valueSearch.trim()) {
+        window.location.href = `/search?keyword=${encodeURIComponent(
+          valueSearch
+        )}`;
+      }
     }
   };
 
@@ -61,19 +69,18 @@ const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center">
-          <input
-            onChange={(e) => setValueSearch(e.target.value)}
-            value={valueSearch}
-            type="text"
-            placeholder="Tìm kiếm phim..."
-            className="border border-gray-300 rounded-l-md p-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-blue-500 text-white rounded-r-md p-2 px-4 hover:bg-blue-600 transition duration-200"
-          >
-            Tìm kiếm
-          </button>
+          <div className="relative flex items-center">
+            <input
+              onChange={(e) => setValueSearch(e.target.value)}
+              value={valueSearch}
+              type="text"
+              placeholder="Tìm kiếm phim..."
+              className="border border-gray-300 rounded-md p-2 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-900 text-white transition duration-200"
+              onKeyDown={handleSearch} // Thêm sự kiện onKeyDown
+            />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />{" "}
+            {/* Di chuyển biểu tượng vào trong ô tìm kiếm */}
+          </div>
         </div>
 
         {!isMobile && (
@@ -85,7 +92,11 @@ const Header: React.FC = () => {
               { path: "/news", name: "Phim Mới" },
               { path: "/api", name: "API" },
             ].map(({ path, name }) => (
-              <Link key={path} href={path} className="hover:text-yellow-300">
+              <Link
+                key={path}
+                href={path}
+                className="hover:text-yellow-300 text-lg"
+              >
                 {name}
               </Link>
             ))}
@@ -108,7 +119,10 @@ const Header: React.FC = () => {
                     { path: "/api", name: "API" },
                   ].map(({ path, name }) => (
                     <li key={path}>
-                      <Link href={path} className="hover:text-yellow-300">
+                      <Link
+                        href={path}
+                        className="hover:text-yellow-300 text-lg"
+                      >
                         {name}
                       </Link>
                     </li>
