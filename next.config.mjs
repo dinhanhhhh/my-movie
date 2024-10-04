@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["phimimg.com"], // Thêm hostname ở đây
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "phimimg.com", // Thay thế domain ở đây
+        pathname: "/**", // Cho phép tất cả đường dẫn hình ảnh từ domain này
+      },
+    ],
   },
 };
+
 export default nextConfig;

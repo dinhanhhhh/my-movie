@@ -13,8 +13,8 @@ export default function ModeToggle() {
   return (
     <Button
       onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
-      title="Toggle Theme" // Thêm tiêu đề cho nút
-      className="flex items-center justify-center p-2 transition duration-200 hover:bg-gray-700 rounded-md" // Thêm hiệu ứng hover
+      title="Toggle Theme"
+      className="flex items-center justify-center p-2 transition duration-200 hover:bg-gray-700 rounded-md" 
     >
       {currentTheme === "dark" ? (
         <Sun className="w-5 h-5 text-yellow-300" />

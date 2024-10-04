@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import ModeToggle from "@/app/components/mode-toggle";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"; // Thêm biểu tượng từ Heroicons
-
+import ModeToggle from "@/app/components/ModeToggle";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 const Header: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -71,12 +70,13 @@ const Header: React.FC = () => {
         <div className="flex items-center">
           <div className="relative flex items-center">
             <input
+              name="search"
               onChange={(e) => setValueSearch(e.target.value)}
               value={valueSearch}
               type="text"
               placeholder="Tìm kiếm phim..."
               className="border border-gray-300 rounded-md p-2 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-900 text-white transition duration-200"
-              onKeyDown={handleSearch} // Thêm sự kiện onKeyDown
+              onKeyDown={handleSearch}
             />
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />{" "}
             {/* Di chuyển biểu tượng vào trong ô tìm kiếm */}
@@ -86,10 +86,10 @@ const Header: React.FC = () => {
         {!isMobile && (
           <nav className="flex space-x-12">
             {[
-              { path: "/Anime", name: "Anime" },
+              { path: "/anime", name: "Anime" },
               { path: "/movie/phim-le", name: "Phim Lẻ" },
-              { path: "/TV/phim-bo", name: "Phim Bộ" },
-              { path: "/news", name: "Phim Mới" },
+              { path: "/tv-shows/phim-bo", name: "Phim Bộ" },
+              { path: "/latestMovies", name: "Phim Mới" },
               { path: "/api", name: "API" },
             ].map(({ path, name }) => (
               <Link
@@ -112,10 +112,10 @@ const Header: React.FC = () => {
               <nav className="absolute right-0 mt-2 w-full bg-gray-800 text-white p-4">
                 <ul className="space-y-4">
                   {[
-                    { path: "/Anime", name: "Anime" },
+                    { path: "/anime", name: "Anime" },
                     { path: "/movie/phim-le", name: "Phim Lẻ" },
-                    { path: "/TV/phim-bo", name: "Phim Bộ" },
-                    { path: "/news", name: "Phim Mới" },
+                    { path: "/tv-shows/phim-bo", name: "Phim Bộ" },
+                    { path: "/latestMovies", name: "Phim Mới" },
                     { path: "/api", name: "API" },
                   ].map(({ path, name }) => (
                     <li key={path}>

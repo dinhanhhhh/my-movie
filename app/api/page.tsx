@@ -15,6 +15,29 @@ const Api: React.FC = () => {
       >
         Truy cập API tài liệu
       </a>
+
+      <h3 className="text-xl font-semibold mt-6 mb-2">Các Endpoint chính</h3>
+      <ul className="list-disc pl-5">
+        <li>
+          <strong>GET /api/movies</strong>: Lấy danh sách phim.
+        </li>
+        <li>
+          <strong>GET /api/movies/:id</strong>: Lấy thông tin chi tiết phim theo
+          ID.
+        </li>
+        <li>
+          <strong>POST /api/movies</strong>: Thêm phim mới.
+        </li>
+      </ul>
+
+      <h3 className="text-xl font-semibold mt-6 mb-2">Ví dụ sử dụng</h3>
+      <pre className=" p-4 rounded-md">
+        <code>
+          {`fetch('/api/movies')
+  .then(response => response.json())
+  .then(data => console.log(data));`}
+        </code>
+      </pre>
     </div>
   );
 };

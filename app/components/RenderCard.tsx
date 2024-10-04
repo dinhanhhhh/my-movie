@@ -1,14 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 
-interface FilmData {
+interface Film {
   slug: string;
-  name?: string; // Cho phép name là undefined
+  name?: string;
   origin_name?: string;
   poster_url: string;
 }
 
-const RenderCard = ({ film }: { film: FilmData }) => {
+const RenderCard = ({ film }: { film: Film }) => {
   return (
     <div className="rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105">
       <Link href={`/info/${film.slug}`}>
@@ -16,9 +16,9 @@ const RenderCard = ({ film }: { film: FilmData }) => {
           className="image__card--film w-full h-auto aspect-[2/3] rounded-t-lg"
           src={`https://phimimg.com/${film.poster_url}`}
           alt={film.name || "Phim không tên"}
-          width={300} // Thay đổi kích thước nếu cần
-          height={450} // Thay đổi kích thước nếu cần
-          priority // Thêm thuộc tính priority
+          width={300}
+          height={450} 
+          priority
         />
       </Link>
       <div className="p-4">
@@ -30,6 +30,7 @@ const RenderCard = ({ film }: { film: FilmData }) => {
         </Link>
         <p className="text-sm">{film.origin_name}</p>
       </div>
+
     </div>
   );
 };

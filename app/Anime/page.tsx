@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import RenderCard from "@/app/components/RenderCard";
 
-interface AnimeData {
+interface Anime {
   slug: string;
   name: string;
   origin_name: string;
@@ -11,48 +11,50 @@ interface AnimeData {
 }
 
 const AnimePage = () => {
-  const [animes, setAnimes] = useState<AnimeData[]>([]);
-  const [title, setTitle] = useState<string>("Hoạt Hình");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [animeList, setAnimeList] = useState<Anime[]>([]);
+  const [pageTitle, setPageTitle] = useState<string>("Hoạt Hình");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchAnimes() {
+    const fetchAnimeData = async () => {
       try {
-        const res = await fetch(
+        const response = await fetch(
           "https://phimapi.com/v1/api/danh-sach/hoat-hinh?limit=24"
         );
-        if (!res.ok) {
+        if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        const data = await res.json();
-        setAnimes(data.data.items || []);
-        setTitle(data.data.titlePage || "Hoạt Hình");
-        document.title = data.data.titlePage || "Hoạt Hình"; // Cập nhật tiêu đề trang
+        const data = await response.json();
+        setAnimeList(data.data.items || []);
+        setPageTitle(data.data.titlePage || "Hoạt Hình");
+        document.title = data.data.titlePage || "Hoạt Hình";
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError("Có lỗi xảy ra khi tải dữ liệu.");
+        setErrorMessage("Có lỗi xảy ra khi tải dữ liệu.");
       } finally {
-        setLoading(false); // Đặt trạng thái tải thành false
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchAnimes();
+    fetchAnimeData();
   }, []);
 
-  if (loading) {
-    return <div className="text-center">Đang tải...</div>; // Hiển thị thông báo tải
+  if (isLoading) {
+    return <div className="text-center">Đang tải...</div>;
   }
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>; // Hiển thị thông báo lỗi
+  if (errorMessage) {
+    return <div className="text-center text-red-500">{errorMessage}</div>;
   }
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold text-center mb-6 uppercase">{title}</h1>
+      <h1 className="text-3xl font-bold text-center mb-6 uppercase">
+        {pageTitle}
+      </h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {animes.map((anime) => (
+        {animeList.map((anime) => (
           <RenderCard key={anime.slug} film={anime} />
         ))}
       </div>

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState, useRef } from "react";
 import Hls from "hls.js";
 import { useParams } from "next/navigation";
@@ -22,19 +21,20 @@ interface FilmData {
 }
 
 function Watch() {
-  const [chap, setChap] = useState(0);
-  const [active, setActive] = useState(0);
+  const [totalEpisodes, setTotalEpisodes] = useState(0); // Đổi tên biến
+  const [activeEpisode, setActiveEpisode] = useState(0); // Đổi tên biến
   const [film, setFilm] = useState<string>("");
   const [activeFilm, setActiveFilm] = useState<Episode[]>([]);
   const [content, setContent] = useState({ name: "", time: "", desc: "" });
   const [loading, setLoading] = useState(false);
   const { slug } = useParams();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null); // Sử dụng useRef
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false); // Thêm biến trạng thái
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   useEffect(() => {
-    const fetchFilmData = async () => {
+    const fetchMovieData = async () => {
+      // Đổi tên hàm
       try {
         const res = await fetch(`https://phimapi.com/phim/${slug}`);
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -49,7 +49,7 @@ function Watch() {
             time: watch.movie.time,
             desc: watch.movie.content,
           });
-          setChap(firstEpisode.length);
+          setTotalEpisodes(firstEpisode.length); // Đổi tên biến
           setFilm(firstEpisode[0]?.link_m3u8);
           setActiveFilm(firstEpisode);
           document.title = watch.movie.name;
@@ -61,14 +61,14 @@ function Watch() {
       }
     };
 
-    fetchFilmData();
+    fetchMovieData();
   }, [slug]);
 
   useEffect(() => {
     if (videoRef.current && Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(film);
-      hls.attachMedia(videoRef.current); // Sử dụng videoRef.current
+      hls.attachMedia(videoRef.current);
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         console.error("HLS error:", data);
@@ -81,14 +81,14 @@ function Watch() {
       videoRef.current &&
       videoRef.current.canPlayType("application/vnd.apple.mpegurl")
     ) {
-      videoRef.current.src = film; // Sử dụng videoRef.current
+      videoRef.current.src = film;
     }
   }, [film]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "f" || e.key === "F") {
-        const videoElement = videoRef.current; // Sử dụng videoRef.current
+        const videoElement = videoRef.current;
         if (videoElement) {
           if (!isFullscreen) {
             if (videoElement.requestFullscreen) {
@@ -114,7 +114,7 @@ function Watch() {
 
   const handleSelectEpisode = (index: number) => {
     setLoading(true);
-    setActive(index);
+    setActiveEpisode(index); // Đổi tên biến
     setFilm(activeFilm[index].link_m3u8);
     setTimeout(() => {
       setLoading(false);
@@ -128,7 +128,7 @@ function Watch() {
       } else {
         videoRef.current.play();
       }
-      setIsVideoPlaying(!isVideoPlaying); // Cập nhật trạng thái
+      setIsVideoPlaying(!isVideoPlaying);
     }
   };
 
@@ -136,7 +136,7 @@ function Watch() {
     <div className="container mx-auto p-6 watch">
       <div className="film__title mb-4 text-center">
         <h1 className="film__name text-3xl font-bold">
-          {`${content.name} ~ Tập ${active + 1}`}
+          {`${content.name} ~ Tập ${activeEpisode + 1}`}
         </h1>
         <p className="text-gray-600">{content.desc}</p>
         <p className="text-gray-500">Thời gian: {content.time}</p>
@@ -149,8 +149,8 @@ function Watch() {
             controls
             className="w-full h-96 rounded-lg shadow-lg"
             style={{ objectFit: "cover" }}
-            ref={videoRef} // Gán ref cho video
-            onClick={handleVideoClick} // Sự kiện click vào video
+            ref={videoRef}
+            onClick={handleVideoClick}
           />
         </div>
       </div>
@@ -160,15 +160,16 @@ function Watch() {
           <div className="list__chap--info mb-2">
             <p className="list__chap--title font-bold text-lg">Chọn tập</p>
             <p className="list__chap--desc text-gray-500">
-              Tập từ 1 đến <span className="chap__desc">{chap}</span>
+              Tập từ 1 đến <span className="chap__desc">{totalEpisodes}</span>{" "}
+              {/* Đổi tên biến */}
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
-            {Array.from({ length: chap }).map((_, i) => (
+            {Array.from({ length: totalEpisodes }).map((_, i) => (
               <div
                 key={i}
                 className={`film__list--chap flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200 ease-in-out w-12 h-12 text-center text-lg font-semibold ${
-                  active === i
+                  activeEpisode === i
                     ? "bg-green-500 text-white"
                     : "bg-gray-800 text-white hover:bg-green-600"
                 }`}

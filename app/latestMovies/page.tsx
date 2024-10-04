@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 // Định nghĩa kiểu dữ liệu cho phim
-interface NewsData {
+interface MovieData {
   slug: string;
   name: string;
   origin_name: string;
@@ -12,7 +12,7 @@ interface NewsData {
 }
 
 // Component hiển thị thông tin từng phim
-const FilmCard: React.FC<NewsData> = ({
+const MovieCard: React.FC<MovieData> = ({
   slug,
   name,
   origin_name,
@@ -38,13 +38,14 @@ const FilmCard: React.FC<NewsData> = ({
   </div>
 );
 
-const News: React.FC = () => {
-  const [news, setNews] = useState<NewsData[]>([]);
+const LatestMovies: React.FC = () => {
+  // Đổi tên component từ News thành LatestMovies
+  const [newMovies, setNewMovies] = useState<MovieData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchNews() {
+    async function fetchNewMovies() {
       try {
         const response = await fetch(
           "https://phimapi.com/danh-sach/phim-moi-cap-nhat"
@@ -53,7 +54,7 @@ const News: React.FC = () => {
           throw new Error("Failed to fetch news");
         }
         const data = await response.json();
-        setNews(data.items || []);
+        setNewMovies(data.items || []);
         document.title = "Phim mới cập nhật !!";
       } catch (error) {
         setError("Không thể tải dữ liệu phim mới. Vui lòng thử lại sau.");
@@ -63,7 +64,7 @@ const News: React.FC = () => {
       }
     }
 
-    fetchNews();
+    fetchNewMovies();
   }, []);
 
   return (
@@ -77,10 +78,10 @@ const News: React.FC = () => {
         <p className="text-center">Đang tải dữ liệu...</p>
       ) : error ? (
         <p className="text-center text-red-600">{error}</p>
-      ) : news.length > 0 ? (
+      ) : newMovies.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {news.map((data) => (
-            <FilmCard key={data.slug} {...data} />
+          {newMovies.map((data) => (
+            <MovieCard key={data.slug} {...data} />
           ))}
         </div>
       ) : (
@@ -92,4 +93,4 @@ const News: React.FC = () => {
   );
 };
 
-export default News;
+export default LatestMovies; // Đổi tên export default

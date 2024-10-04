@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image"; // Thêm import Image từ next/image
+import React from "react";
 
 interface TVShowData {
   slug: string;

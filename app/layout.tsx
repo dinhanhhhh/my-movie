@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer"; // Import Footer
-import { ThemeProvider } from "@/app/components/theme-provider";
+import Footer from "@/app/components/Footer";
+import { ThemeProvider } from "@/app/components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Movies",
