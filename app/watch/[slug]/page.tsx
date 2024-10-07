@@ -1,7 +1,9 @@
 "use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import Hls from "hls.js";
 import { useParams } from "next/navigation";
+import clsx from "clsx";
 
 interface Episode {
   link_m3u8: string;
@@ -21,8 +23,8 @@ interface FilmData {
 }
 
 function Watch() {
-  const [totalEpisodes, setTotalEpisodes] = useState(0); // Đổi tên biến
-  const [activeEpisode, setActiveEpisode] = useState(0); // Đổi tên biến
+  const [totalEpisodes, setTotalEpisodes] = useState(0);
+  const [activeEpisode, setActiveEpisode] = useState(0);
   const [film, setFilm] = useState<string>("");
   const [activeFilm, setActiveFilm] = useState<Episode[]>([]);
   const [content, setContent] = useState({ name: "", time: "", desc: "" });
@@ -31,10 +33,11 @@ function Watch() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const canSeekRef = useRef(true);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     const fetchMovieData = async () => {
-      // Đổi tên hàm
       try {
         const res = await fetch(`https://phimapi.com/phim/${slug}`);
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -49,7 +52,7 @@ function Watch() {
             time: watch.movie.time,
             desc: watch.movie.content,
           });
-          setTotalEpisodes(firstEpisode.length); // Đổi tên biến
+          setTotalEpisodes(firstEpisode.length);
           setFilm(firstEpisode[0]?.link_m3u8);
           setActiveFilm(firstEpisode);
           document.title = watch.movie.name;
@@ -74,6 +77,11 @@ function Watch() {
         console.error("HLS error:", data);
       });
 
+      // Tự động phát tập tiếp theo
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        videoRef.current?.play();
+      });
+
       return () => {
         hls.destroy();
       };
@@ -87,21 +95,45 @@ function Watch() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "f" || e.key === "F") {
-        const videoElement = videoRef.current;
-        if (videoElement) {
-          if (!isFullscreen) {
-            if (videoElement.requestFullscreen) {
-              videoElement.requestFullscreen();
-            }
-            setIsFullscreen(true);
-          } else {
-            if (document.exitFullscreen) {
-              document.exitFullscreen();
-            }
-            setIsFullscreen(false);
-          }
+      if (!canSeekRef.current) return;
+      const videoElement = videoRef.current;
+      if (!videoElement) return;
+
+      e.preventDefault();
+      canSeekRef.current = false;
+      setTimeout(() => {
+        canSeekRef.current = true;
+      }, 300);
+      // Phím tắt phát/tạm dừng bằng Space
+      if (e.key === " ") {
+        if (videoElement.paused) {
+          videoElement.play();
+        } else {
+          videoElement.pause();
         }
+        setIsVideoPlaying(!isVideoPlaying);
+      }
+      if (e.key === "f" || e.key === "F") {
+        if (!isFullscreen) {
+          if (videoElement.requestFullscreen) {
+            videoElement.requestFullscreen();
+          }
+          setIsFullscreen(true);
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+          setIsFullscreen(false);
+        }
+      } else if (e.key === "ArrowRight") {
+        const newTime = Math.min(
+          videoElement.duration,
+          videoElement.currentTime + 10
+        );
+        videoElement.currentTime = newTime;
+      } else if (e.key === "ArrowLeft") {
+        const newTime = Math.max(0, videoElement.currentTime - 10);
+        videoElement.currentTime = newTime;
       }
     };
 
@@ -114,7 +146,7 @@ function Watch() {
 
   const handleSelectEpisode = (index: number) => {
     setLoading(true);
-    setActiveEpisode(index); // Đổi tên biến
+    setActiveEpisode(index);
     setFilm(activeFilm[index].link_m3u8);
     setTimeout(() => {
       setLoading(false);
@@ -130,6 +162,31 @@ function Watch() {
       }
       setIsVideoPlaying(!isVideoPlaying);
     }
+  };
+
+  const handleSkipForward = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.min(
+        videoRef.current.duration,
+        videoRef.current.currentTime + 10
+      );
+    }
+  };
+
+  const handleSkipBackward = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.max(
+        0,
+        videoRef.current.currentTime - 10
+      );
+    }
+  };
+
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    alert(
+      `Tập phim ${isFavorite ? "đã bỏ yêu thích" : "đã thêm vào yêu thích"}`
+    );
   };
 
   return (
@@ -155,24 +212,53 @@ function Watch() {
         </div>
       </div>
 
+      {/* Thêm nút đánh dấu yêu thích */}
+      <div className="flex justify-center mb-4">
+        <button
+          className={clsx(
+            "px-4 py-2 rounded-md",
+            isFavorite ? "bg-red-500" : "bg-blue-500"
+          )}
+          onClick={handleToggleFavorite}
+        >
+          {isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+        </button>
+      </div>
+
+      {/* Add Skip Buttons */}
+      <div className="flex justify-center gap-4 mb-4">
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          onClick={handleSkipBackward}
+        >
+          Tua Lùi 10s
+        </button>
+        <button
+          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          onClick={handleSkipForward}
+        >
+          Tua Tiến 10s
+        </button>
+      </div>
+
       <div className="w-full mb-4">
         <div className="list__chap shadow-md rounded p-4">
           <div className="list__chap--info mb-2">
             <p className="list__chap--title font-bold text-lg">Chọn tập</p>
             <p className="list__chap--desc text-gray-500">
-              Tập từ 1 đến <span className="chap__desc">{totalEpisodes}</span>{" "}
-              {/* Đổi tên biến */}
+              Tập từ 1 đến <span className="chap__desc">{totalEpisodes}</span>
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             {Array.from({ length: totalEpisodes }).map((_, i) => (
               <div
                 key={i}
-                className={`film__list--chap flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200 ease-in-out w-12 h-12 text-center text-lg font-semibold ${
+                className={clsx(
+                  "film__list--chap flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200 ease-in-out w-12 h-12 text-center text-lg font-semibold",
                   activeEpisode === i
                     ? "bg-green-500 text-white"
                     : "bg-gray-800 text-white hover:bg-green-600"
-                }`}
+                )}
                 onClick={() => handleSelectEpisode(i)}
               >
                 {i + 1}
@@ -183,9 +269,9 @@ function Watch() {
       </div>
 
       {loading && (
-        <p className="text-center text-lg text-gray-600">
-          Đang tải tập phim...
-        </p>
+        <div className="loading-indicator fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="spinner border-4 border-t-4 border-gray-700 rounded-full animate-spin w-12 h-12" />
+        </div>
       )}
     </div>
   );

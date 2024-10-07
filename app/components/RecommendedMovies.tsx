@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import RenderCard from "@/app/components/RenderCard";
+import CustomPagination from "@/app/components/CustomPagination";
 
 type Film = {
   slug: string;
@@ -17,58 +19,74 @@ type Films = {
 };
 
 const RecommendedMovies: React.FC = () => {
+  const router = useRouter();
   const [films, setFilms] = useState<Films>({
     hoatHinh: [],
     phimLe: [],
     phimBo: [],
     tvShows: [],
   });
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState<number>(0);
 
   useEffect(() => {
-    document.title = "Phim Chill chất lượng cao miễn phí. Xem phim HD VietSub.";
+    document.title = "Phim Hay chất lượng cao miễn phí. Xem phim HD VietSub.";
+    fetchData(currentPage);
+  }, [currentPage]);
 
-    const fetchData = async () => {
-      try {
-        const [hoatHinhRes, phimLeRes, phimBoRes, tvShowsRes] =
-          await Promise.all([
-            fetch(`https://phimapi.com/v1/api/danh-sach/hoat-hinh?limit=6`),
-            fetch(`https://phimapi.com/v1/api/danh-sach/phim-le?limit=6`),
-            fetch(`https://phimapi.com/v1/api/danh-sach/phim-bo?limit=6`),
-            fetch(`https://phimapi.com/v1/api/danh-sach/tv-shows?limit=6`),
-          ]);
+  const fetchData = async (page: number) => {
+    try {
+      setLoading(true);
+      const [hoatHinhRes, phimLeRes, phimBoRes, tvShowsRes] = await Promise.all(
+        [
+          fetch(
+            `https://phimapi.com/v1/api/danh-sach/hoat-hinh?limit=6&page=${page}`
+          ),
+          fetch(
+            `https://phimapi.com/v1/api/danh-sach/phim-le?limit=6&page=${page}`
+          ),
+          fetch(
+            `https://phimapi.com/v1/api/danh-sach/phim-bo?limit=6&page=${page}`
+          ),
+          fetch(
+            `https://phimapi.com/v1/api/danh-sach/tv-shows?limit=6&page=${page}`
+          ),
+        ]
+      );
 
-        if (
-          !hoatHinhRes.ok ||
-          !phimLeRes.ok ||
-          !phimBoRes.ok ||
-          !tvShowsRes.ok
-        ) {
-          throw new Error("Không thể tải dữ liệu từ máy chủ.");
-        }
-
-        const hoatHinhData = await hoatHinhRes.json();
-        const phimLeData = await phimLeRes.json();
-        const phimBoData = await phimBoRes.json();
-        const tvShowsData = await tvShowsRes.json();
-
-        setFilms({
-          hoatHinh: hoatHinhData.data.items,
-          phimLe: phimLeData.data.items,
-          phimBo: phimBoData.data.items,
-          tvShows: tvShowsData.data.items,
-        });
-      } catch (error) {
-        setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+      if (!hoatHinhRes.ok || !phimLeRes.ok || !phimBoRes.ok || !tvShowsRes.ok) {
+        throw new Error("Không thể tải dữ liệu từ máy chủ.");
       }
-    };
 
-    fetchData();
-  }, []);
+      const hoatHinhData = await hoatHinhRes.json();
+      const phimLeData = await phimLeRes.json();
+      const phimBoData = await phimBoRes.json();
+      const tvShowsData = await tvShowsRes.json();
+
+      setFilms({
+        hoatHinh: hoatHinhData.data.items,
+        phimLe: phimLeData.data.items,
+        phimBo: phimBoData.data.items,
+        tvShows: tvShowsData.data.items,
+      });
+
+      setTotalPages(hoatHinhData.totalPages);
+    } catch (error) {
+      setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    router.push(`/?page=${page}`);
+  };
 
   const renderFilmList = (title: string, filmData: Film[]) => (
     <div className="form_card mb-8 p-4">
@@ -102,6 +120,13 @@ const RecommendedMovies: React.FC = () => {
             renderFilmList("PHIM BỘ ĐỀ CỬ", films.phimBo)}
           {films.tvShows.length > 0 &&
             renderFilmList("TV SHOWS ĐỀ CỬ", films.tvShows)}
+
+          {/* Pagination */}
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>

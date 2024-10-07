@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import CustomPagination from "@/app/components/CustomPagination";
 
 // Định nghĩa kiểu dữ liệu cho phim
 interface MovieData {
@@ -39,22 +41,33 @@ const MovieCard: React.FC<MovieData> = ({
 );
 
 const LatestMovies: React.FC = () => {
-  // Đổi tên component từ News thành LatestMovies
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const pageParam = searchParams.get("page");
   const [newMovies, setNewMovies] = useState<MovieData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(
+    pageParam ? parseInt(pageParam) : 1
+  );
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  const moviesPerPage = 12; // Số phim hiển thị trên mỗi trang
 
   useEffect(() => {
     async function fetchNewMovies() {
       try {
+        setLoading(true);
         const response = await fetch(
-          "https://phimapi.com/danh-sach/phim-moi-cap-nhat"
+          `https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${currentPage}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch news");
         }
         const data = await response.json();
         setNewMovies(data.items || []);
+        setTotalPages(Math.ceil(data.totalItems / moviesPerPage)); // Tính tổng số trang
         document.title = "Phim mới cập nhật !!";
       } catch (error) {
         setError("Không thể tải dữ liệu phim mới. Vui lòng thử lại sau.");
@@ -65,7 +78,12 @@ const LatestMovies: React.FC = () => {
     }
 
     fetchNewMovies();
-  }, []);
+  }, [currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    router.push(`${pathname}?page=${page}`); // Cập nhật URL mà không làm mới trang
+  };
 
   return (
     <div className="container mx-auto py-8">
@@ -79,11 +97,20 @@ const LatestMovies: React.FC = () => {
       ) : error ? (
         <p className="text-center text-red-600">{error}</p>
       ) : newMovies.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {newMovies.map((data) => (
-            <MovieCard key={data.slug} {...data} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {newMovies.map((data) => (
+              <MovieCard key={data.slug} {...data} />
+            ))}
+          </div>
+
+          {/* Phân trang */}
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       ) : (
         <p className="text-center text-gray-500">
           Không có phim mới để hiển thị.
@@ -93,4 +120,4 @@ const LatestMovies: React.FC = () => {
   );
 };
 
-export default LatestMovies; // Đổi tên export default
+export default LatestMovies;
