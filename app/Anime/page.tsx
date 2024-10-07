@@ -5,7 +5,7 @@ const AnimePage = () => {
     <ContentList
       apiUrl="https://phimapi.com/v1/api/danh-sach/hoat-hinh"
       defaultTitle="Phim Hoạt Hình"
-      contentType="anime" // Tên này sẽ được dùng trong URL
+      contentType="Anime" // Tên này sẽ được dùng trong URL
     />
   );
 };
