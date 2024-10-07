@@ -86,7 +86,7 @@ const Header: React.FC = () => {
         {!isMobile && (
           <nav className="flex space-x-12">
             {[
-              { path: "/anime", name: "Anime" },
+              { path: "/Anime", name: "Anime" },
               { path: "/movie/phim-le", name: "Phim Lẻ" },
               { path: "/tv-shows/phim-bo", name: "Phim Bộ" },
               { path: "/latestMovies", name: "Phim Mới" },
@@ -112,7 +112,7 @@ const Header: React.FC = () => {
               <nav className="absolute right-0 mt-2 w-full bg-gray-800 text-white p-4">
                 <ul className="space-y-4">
                   {[
-                    { path: "/anime", name: "Anime" },
+                    { path: "/Anime", name: "Anime" },
                     { path: "/movie/phim-le", name: "Phim Lẻ" },
                     { path: "/tv-shows/phim-bo", name: "Phim Bộ" },
                     { path: "/latestMovies", name: "Phim Mới" },
