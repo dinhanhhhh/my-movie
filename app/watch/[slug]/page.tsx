@@ -290,28 +290,18 @@ function Watch() {
         </button>
       </div>
 
-      {/* Chọn phân giải */}
-      {resolutions.length > 1 && (
-        <div className="flex justify-center mb-4">
-          <label htmlFor="resolution-select" className="mr-2 text-gray-700">
-            Chọn phân giải:
-          </label>
+      {/* Chọn độ phân giải */}
+      {resolutions.length > 0 && (
+        <div className="resolution mb-4">
+          <label className="mr-2">Chọn độ phân giải:</label>
           <select
-            id="resolution-select"
-            className="px-4 py-2 border rounded-md"
-            value={selectedResolution ?? "auto"}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "auto") {
-                handleResolutionChange(-1); // -1 để bật tự động
-              } else {
-                handleResolutionChange(parseInt(value, 10));
-              }
-            }}
+            onChange={(e) => handleResolutionChange(Number(e.target.value))}
+            value={selectedResolution === null ? -1 : selectedResolution}
+            className="border border-gray-400 rounded-md p-2"
           >
-            <option value="auto">Tự động</option>
-            {resolutions.map((res, index) => (
-              <option key={index} value={res.value}>
+            <option value={-1}>Tự động</option>
+            {resolutions.map((res) => (
+              <option key={res.value} value={res.value}>
                 {res.label}
               </option>
             ))}
