@@ -104,7 +104,7 @@ function Watch() {
       setTimeout(() => {
         canSeekRef.current = true;
       }, 300);
-      // Phím tắt phát/tạm dừng bằng Space
+
       if (e.key === " ") {
         if (videoElement.paused) {
           videoElement.play();
@@ -113,6 +113,7 @@ function Watch() {
         }
         setIsVideoPlaying(!isVideoPlaying);
       }
+
       if (e.key === "f" || e.key === "F") {
         if (!isFullscreen) {
           if (videoElement.requestFullscreen) {
@@ -212,7 +213,6 @@ function Watch() {
         </div>
       </div>
 
-      {/* Thêm nút đánh dấu yêu thích */}
       <div className="flex justify-center mb-4">
         <button
           className={clsx(
@@ -225,7 +225,6 @@ function Watch() {
         </button>
       </div>
 
-      {/* Add Skip Buttons */}
       <div className="flex justify-center gap-4 mb-4">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -257,7 +256,7 @@ function Watch() {
                   "film__list--chap flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200 ease-in-out w-12 h-12 text-center text-lg font-semibold",
                   activeEpisode === i
                     ? "bg-green-500 text-white"
-                    : "bg-gray-800 text-white hover:bg-green-600"
+                    : "bg-gray-200 text-gray-800 hover:bg-green-200"
                 )}
                 onClick={() => handleSelectEpisode(i)}
               >
@@ -267,12 +266,6 @@ function Watch() {
           </div>
         </div>
       </div>
-
-      {loading && (
-        <div className="loading-indicator fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="spinner border-4 border-t-4 border-gray-700 rounded-full animate-spin w-12 h-12" />
-        </div>
-      )}
     </div>
   );
 }
