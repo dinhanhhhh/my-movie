@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Hls from "hls.js";
 import { useParams } from "next/navigation";
 import clsx from "clsx";
@@ -22,6 +22,11 @@ interface FilmData {
   }[];
 }
 
+interface Resolution {
+  label: string;
+  value: number;
+}
+
 function Watch() {
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [activeEpisode, setActiveEpisode] = useState(0);
@@ -35,9 +40,16 @@ function Watch() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const canSeekRef = useRef(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [resolutions, setResolutions] = useState<Resolution[]>([]);
+  const [selectedResolution, setSelectedResolution] = useState<number | null>(
+    null
+  );
+  const hlsRef = useRef<Hls | null>(null);
 
+  // Fetch movie data
   useEffect(() => {
     const fetchMovieData = async () => {
+      setLoading(true); // Set loading to true when fetching data
       try {
         const res = await fetch(`https://phimapi.com/phim/${slug}`);
         if (!res.ok) throw new Error("Failed to fetch data");
@@ -61,38 +73,68 @@ function Watch() {
         }
       } catch (error) {
         console.error("Error fetching film data:", error);
+        alert("Có lỗi xảy ra khi tải phim. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false); // Set loading to false after fetching data
       }
     };
 
     fetchMovieData();
   }, [slug]);
 
+  // Initialize HLS and handle resolutions
   useEffect(() => {
-    if (videoRef.current && Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(film);
-      hls.attachMedia(videoRef.current);
+    if (videoRef.current && film) {
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hlsRef.current = hls;
+        hls.loadSource(film);
+        hls.attachMedia(videoRef.current);
 
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error("HLS error:", data);
-      });
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          videoRef.current?.play();
+        });
 
-      // Tự động phát tập tiếp theo
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        videoRef.current?.play();
-      });
+        hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
+          const availableLevels = hls.levels.map((level, index) => ({
+            label: level.height ? `${level.height}p` : "Auto",
+            value: index,
+          }));
+          console.log("Available Levels:", availableLevels); // Debug log
+          setResolutions(availableLevels);
+        });
 
-      return () => {
-        hls.destroy();
-      };
-    } else if (
-      videoRef.current &&
-      videoRef.current.canPlayType("application/vnd.apple.mpegurl")
-    ) {
-      videoRef.current.src = film;
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error("HLS error:", data);
+          alert("Có lỗi xảy ra với video. Vui lòng thử lại.");
+        });
+
+        return () => {
+          hls.destroy();
+        };
+      } else if (
+        videoRef.current.canPlayType("application/vnd.apple.mpegurl")
+      ) {
+        videoRef.current.src = film;
+      }
     }
   }, [film]);
 
+  // Handle resolution change
+  const handleResolutionChange = useCallback((value: number) => {
+    if (hlsRef.current) {
+      if (value === -1) {
+        // Tự động chọn
+        hlsRef.current.currentLevel = -1;
+      } else {
+        hlsRef.current.currentLevel = value;
+      }
+      setSelectedResolution(value);
+      console.log(`Resolution changed to: ${value}`); // Debug log
+    }
+  }, []);
+
+  // Handle key events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!canSeekRef.current) return;
@@ -105,6 +147,7 @@ function Watch() {
         canSeekRef.current = true;
       }, 300);
 
+      // Toggle play/pause with space key
       if (e.key === " ") {
         if (videoElement.paused) {
           videoElement.play();
@@ -114,6 +157,7 @@ function Watch() {
         setIsVideoPlaying(!isVideoPlaying);
       }
 
+      // Toggle fullscreen with 'f' key
       if (e.key === "f" || e.key === "F") {
         if (!isFullscreen) {
           if (videoElement.requestFullscreen) {
@@ -127,14 +171,12 @@ function Watch() {
           setIsFullscreen(false);
         }
       } else if (e.key === "ArrowRight") {
-        const newTime = Math.min(
+        videoElement.currentTime = Math.min(
           videoElement.duration,
           videoElement.currentTime + 10
         );
-        videoElement.currentTime = newTime;
       } else if (e.key === "ArrowLeft") {
-        const newTime = Math.max(0, videoElement.currentTime - 10);
-        videoElement.currentTime = newTime;
+        videoElement.currentTime = Math.max(0, videoElement.currentTime - 10);
       }
     };
 
@@ -143,17 +185,20 @@ function Watch() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isFullscreen]);
+  }, [isFullscreen, isVideoPlaying]);
 
+  // Handle episode selection
   const handleSelectEpisode = (index: number) => {
     setLoading(true);
     setActiveEpisode(index);
     setFilm(activeFilm[index].link_m3u8);
+    setSelectedResolution(null); // Reset resolution when changing episode
     setTimeout(() => {
       setLoading(false);
     }, 1000);
   };
 
+  // Handle video click to toggle play/pause
   const handleVideoClick = () => {
     if (videoRef.current) {
       if (isVideoPlaying) {
@@ -165,6 +210,7 @@ function Watch() {
     }
   };
 
+  // Handle skip forward
   const handleSkipForward = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = Math.min(
@@ -174,6 +220,7 @@ function Watch() {
     }
   };
 
+  // Handle skip backward
   const handleSkipBackward = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = Math.max(
@@ -183,6 +230,7 @@ function Watch() {
     }
   };
 
+  // Handle favorite toggle
   const handleToggleFavorite = () => {
     setIsFavorite(!isFavorite);
     alert(
@@ -213,6 +261,7 @@ function Watch() {
         </div>
       </div>
 
+      {/* Thêm nút đánh dấu yêu thích */}
       <div className="flex justify-center mb-4">
         <button
           className={clsx(
@@ -225,6 +274,7 @@ function Watch() {
         </button>
       </div>
 
+      {/* Add Skip Buttons */}
       <div className="flex justify-center gap-4 mb-4">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -239,6 +289,35 @@ function Watch() {
           Tua Tiến 10s
         </button>
       </div>
+
+      {/* Chọn phân giải */}
+      {resolutions.length > 1 && (
+        <div className="flex justify-center mb-4">
+          <label htmlFor="resolution-select" className="mr-2 text-gray-700">
+            Chọn phân giải:
+          </label>
+          <select
+            id="resolution-select"
+            className="px-4 py-2 border rounded-md"
+            value={selectedResolution ?? "auto"}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "auto") {
+                handleResolutionChange(-1); // -1 để bật tự động
+              } else {
+                handleResolutionChange(parseInt(value, 10));
+              }
+            }}
+          >
+            <option value="auto">Tự động</option>
+            {resolutions.map((res, index) => (
+              <option key={index} value={res.value}>
+                {res.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="w-full mb-4">
         <div className="list__chap shadow-md rounded p-4">
@@ -256,7 +335,7 @@ function Watch() {
                   "film__list--chap flex items-center justify-center rounded-full cursor-pointer transition-colors duration-200 ease-in-out w-12 h-12 text-center text-lg font-semibold",
                   activeEpisode === i
                     ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-800 hover:bg-green-200"
+                    : "bg-gray-800 text-white hover:bg-green-600"
                 )}
                 onClick={() => handleSelectEpisode(i)}
               >
@@ -266,6 +345,12 @@ function Watch() {
           </div>
         </div>
       </div>
+
+      {loading && (
+        <div className="loading-indicator fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="spinner border-4 border-t-4 border-gray-700 rounded-full animate-spin w-12 h-12" />
+        </div>
+      )}
     </div>
   );
 }
